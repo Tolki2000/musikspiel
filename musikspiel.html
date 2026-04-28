@@ -1,56 +1,230 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Musik-Ratespiel (Spotify-Version)</title>
+  <meta charset="UTF-8" />
+  <title>Musik-Ratespiel</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #eee;
-      text-align: center;
+      font-family: system-ui, sans-serif;
+      background: #111827;
+      color: #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 20px;
     }
-    .game-box {
-      background: #222;
+    h1 {
+      margin-bottom: 10px;
+    }
+    .game-container {
+      background: #1f2937;
       padding: 20px;
-      border-radius: 10px;
+      border-radius: 12px;
       max-width: 500px;
-      margin: auto;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
     }
-    input {
-      width: 90%;
-      padding: 8px;
-      margin: 5px 0;
-      border-radius: 5px;
-      border: none;
+    .row {
+      margin: 10px 0;
+    }
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #4b5563;
+      background: #111827;
+      color: #e5e7eb;
     }
     button {
-      padding: 10px 20px;
-      margin: 10px 5px;
+      margin-top: 8px;
+      padding: 8px 14px;
+      border-radius: 6px;
       border: none;
-      border-radius: 5px;
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 600;
     }
-    #playBtn { background: #1DB954; } /* Spotify-Grün */
-    #checkBtn { background: #10b981; }
-    #nextBtn { background: #3b82f6; }
-    #status { margin-top: 10px; font-size: 1.1em; }
+    button#checkBtn {
+      background: #10b981;
+      color: #022c22;
+    }
+    button#nextBtn {
+      background: #3b82f6;
+      color: #eff6ff;
+      margin-left: 8px;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    .status {
+      margin-top: 10px;
+      min-height: 24px;
+      font-weight: 600;
+    }
+    .status.correct {
+      color: #22c55e;
+    }
+    .status.wrong {
+      color: #f97316;
+    }
+    .score {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+    .hint {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
-
   <h1>🎵 Musik-Ratespiel</h1>
-  <p>Tippe auf „Song abspielen“, um den Titel in Spotify zu hören.</p>
+  <p>Höre dir den Ausschnitt an und rate <strong>Titel</strong> und <strong>Interpret</strong>.</p>
 
-  <div class="game-box">
+  <div class="game-container">
+    <div class="row">
+      <audio id="player" controls></audio>
+      <div class="hint" id="hint"></div>
+    </div>
 
-    <button id="playBtn">Song abspielen</button>
+    <div class="row">
+      <label for="titleInput">Songtitel</label>
+      <input type="text" id="titleInput" placeholder="z.B. Billie Jean" />
+    </div>
 
-    <input id="titleInput" type="text" placeholder="Songtitel">
-    <input id="artistInput" type="text" placeholder="Interpret">
+    <div class="row">
+      <label for="artistInput">Interpret</label>
+      <input type="text" id="artistInput" placeholder="z.B. Michael Jackson" />
+    </div>
 
-    <br>
-    <button id="checkBtn">Antwort prüfen</button>
-    <button id="nextBtn" disabled>
+    <div class="row">
+      <button id="checkBtn">Antwort prüfen</button>
+      <button id="nextBtn" disabled>Nächster Song</button>
+    </div>
+
+    <div class="status" id="status"></div>
+    <div class="score" id="score"></div>
+  </div>
+
+  <script>
+    // HIER trägst du deine Songs ein:
+    // audioSrc: Pfad/URL zu deiner Audiodatei
+    const songs = [
+      {
+        title: "Billie Jean",
+        artist: "Michael Jackson",
+        audioSrc: "audio/billie_jean_snippet.mp3",
+        hint: "80er Pop, ikonischer Basslauf."
+      },
+      {
+        title: "Smells Like Teen Spirit",
+        artist: "Nirvana",
+        audioSrc: "audio/smells_like_teen_spirit_snippet.mp3",
+        hint: "Grunge-Hymne der 90er."
+      },
+      {
+        title: "Shape of You",
+        artist: "Ed Sheeran",
+        audioSrc: "audio/shape_of_you_snippet.mp3",
+        hint: "Sehr bekannter Pop-Hit mit Marimba-ähnlichem Sound."
+      }
+    ];
+
+    const player = document.getElementById("player");
+    const hintEl = document.getElementById("hint");
+    const titleInput = document.getElementById("titleInput");
+    const artistInput = document.getElementById("artistInput");
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const statusEl = document.getElementById("status");
+    const scoreEl = document.getElementById("score");
+
+    let currentIndex = 0;
+    let score = 0;
+    let total = 0;
+    let answered = false;
+
+    function normalize(str) {
+      return str.trim().toLowerCase()
+        .replace(/ä/g, "ae")
+        .replace(/ö/g, "oe")
+        .replace(/ü/g, "ue")
+        .replace(/ß/g, "ss");
+    }
+
+    function loadSong(index) {
+      const song = songs[index];
+      player.src = song.audioSrc;
+      hintEl.textContent = "Hinweis: " + song.hint;
+      titleInput.value = "";
+      artistInput.value = "";
+      statusEl.textContent = "";
+      statusEl.className = "status";
+      answered = false;
+      checkBtn.disabled = false;
+      nextBtn.disabled = true;
+      updateScore();
+    }
+
+    function updateScore() {
+      scoreEl.textContent = `Punkte: ${score} / ${total}`;
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const song = songs[currentIndex];
+      const userTitle = normalize(titleInput.value);
+      const userArtist = normalize(artistInput.value);
+      const correctTitle = normalize(song.title);
+      const correctArtist = normalize(song.artist);
+
+      let correctParts = 0;
+      if (userTitle && userTitle.includes(correctTitle) || correctTitle.includes(userTitle)) {
+        correctParts++;
+      }
+      if (userArtist && userArtist.includes(correctArtist) || correctArtist.includes(userArtist)) {
+        correctParts++;
+      }
+
+      total++;
+
+      if (correctParts === 2) {
+        score++;
+        statusEl.textContent = "Volltreffer! Titel und Interpret sind richtig. 🎉";
+        statusEl.className = "status correct";
+      } else if (correctParts === 1) {
+        score += 0.5;
+        statusEl.textContent =
+          `Teilweise richtig! Gesucht war: "${song.title}" von ${song.artist}.`;
+        statusEl.className = "status wrong";
+      } else {
+        statusEl.textContent =
+          `Leider falsch. Gesucht war: "${song.title}" von ${song.artist}.`;
+        statusEl.className = "status wrong";
+      }
+
+      answered = true;
+      checkBtn.disabled = true;
+      nextBtn.disabled = false;
+      updateScore();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      currentIndex = (currentIndex + 1) % songs.length;
+      loadSong(currentIndex);
+    });
+
+    // Start mit erstem Song
+    loadSong(currentIndex);
+  </script>
+</body>
+</html>
