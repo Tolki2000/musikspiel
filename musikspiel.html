@@ -62,7 +62,8 @@
 
   <div class="game-box">
 
-    <a id="playLink" href="#" target="_blank" rel="noopener noreferrer">Song abspielen</a>
+    <!-- WICHTIG: echter App-Link -->
+    <a id="playLink" href="#">Song abspielen</a>
 
     <h3>Welche Antwort ist richtig?</h3>
     <div id="answers"></div>
@@ -91,22 +92,14 @@
     function updatePlayLink() {
       const s = songs[currentIndex];
 
+      // DIREKT den App-Link setzen
       const appLink = `spotify:track:${s.trackId}`;
-      const webLink = `https://open.spotify.com/track/${s.trackId}`;
 
       const playLink = document.getElementById("playLink");
-
       playLink.href = appLink;
 
-      playLink.onclick = (e) => {
-        e.preventDefault();
-
-        window.location = appLink;
-
-        setTimeout(() => {
-          window.open(webLink, "_blank");
-        }, 300);
-      };
+      // KEIN preventDefault, KEIN window.location, KEIN Fallback
+      // → sonst blockiert Windows Chrome den Start
     }
 
     function shuffle(array) {
