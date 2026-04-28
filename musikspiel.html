@@ -90,8 +90,23 @@
 
     function updatePlayLink() {
       const s = songs[currentIndex];
-      document.getElementById("playLink").href =
-        `https://open.spotify.com/track/${s.trackId}`;
+
+      const appLink = `spotify:track:${s.trackId}`;
+      const webLink = `https://open.spotify.com/track/${s.trackId}`;
+
+      const playLink = document.getElementById("playLink");
+
+      playLink.href = appLink;
+
+      playLink.onclick = (e) => {
+        e.preventDefault();
+
+        window.location = appLink;
+
+        setTimeout(() => {
+          window.open(webLink, "_blank");
+        }, 300);
+      };
     }
 
     function shuffle(array) {
@@ -113,27 +128,21 @@
       const answersDiv = document.getElementById("answers");
       answersDiv.innerHTML = "";
 
-      // 1 richtige Antwort
       const correct = `${s.title} – ${s.artist}`;
 
-      // 5 falsche Antworten
       let wrong = songs
         .filter((_, i) => i !== currentIndex)
         .map(x => `${x.title} – ${x.artist}`);
 
       wrong = shuffle(wrong).slice(0, 5);
 
-      // mischen
       const options = shuffle([correct, ...wrong]);
 
-      // Buttons erzeugen
       options.forEach(option => {
         const btn = document.createElement("button");
         btn.className = "answer-btn";
         btn.textContent = option;
-
         btn.onclick = () => checkAnswer(option, correct);
-
         answersDiv.appendChild(btn);
       });
 
@@ -171,7 +180,9 @@
         `Punkte: ${score} / ${total}`;
     }
 
-    loadSong();
+    window.addEventListener("DOMContentLoaded", () => {
+      loadSong();
+    });
   </script>
 
 </body>
