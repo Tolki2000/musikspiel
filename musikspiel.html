@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Musik-Ratespiel (Spotify-Version)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #eee;
+      text-align: center;
+      padding: 20px;
+    }
+    .game-box {
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 500px;
+      margin: auto;
+    }
+    input {
+      width: 90%;
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #playBtn { background: #1DB954; } /* Spotify-Grün */
+    #checkBtn { background: #10b981; }
+    #nextBtn { background: #3b82f6; }
+    #status { margin-top: 10px; font-size: 1.1em; }
+  </style>
+</head>
+<body>
+
+  <h1>🎵 Musik-Ratespiel</h1>
+  <p>Tippe auf „Song abspielen“, um den Ausschnitt in Spotify zu hören.</p>
+
+  <div class="game-box">
+
+    <button id="playBtn">Song abspielen</button>
+
+    <input id="titleInput" type="text" placeholder="Songtitel">
+    <input id="artistInput" type="text" placeholder="Interpret">
+
+    <br>
+    <button id="checkBtn">Antwort prüfen</button>
+    <button id="nextBtn" disabled>Nächster Song</button>
+
+    <div id="status"></div>
+    <div id="score">
