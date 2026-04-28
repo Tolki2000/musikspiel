@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Musik-Ratespiel (Spotify-Version)</title>
+  <title>Musik-Ratespiel (Spotify + Multiple Choice)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -18,24 +18,40 @@
       max-width: 500px;
       margin: auto;
     }
-    input {
+    .answer-btn {
       width: 90%;
-      padding: 8px;
-      margin: 5px 0;
-      border-radius: 5px;
+      padding: 10px;
+      margin: 6px 0;
       border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      background: #333;
+      color: #eee;
     }
-    button {
+    .answer-btn:hover {
+      background: #444;
+    }
+    #playLink {
+      display: inline-block;
+      padding: 10px 20px;
+      margin: 10px 5px;
+      border-radius: 5px;
+      background: #1DB954;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    #nextBtn {
       padding: 10px 20px;
       margin: 10px 5px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       font-weight: bold;
+      background: #3b82f6;
+      color: #fff;
     }
-    #playBtn { background: #1DB954; } /* Spotify-Grün */
-    #checkBtn { background: #10b981; }
-    #nextBtn { background: #3b82f6; }
     #status { margin-top: 10px; font-size: 1.1em; }
   </style>
 </head>
@@ -46,13 +62,11 @@
 
   <div class="game-box">
 
-    <button id="playBtn">Song abspielen</button>
+    <a id="playLink" href="#" target="_blank" rel="noopener noreferrer">Song abspielen</a>
 
-    <input id="titleInput" type="text" placeholder="Songtitel">
-    <input id="artistInput" type="text" placeholder="Interpret">
+    <h3>Welche Antwort ist richtig?</h3>
+    <div id="answers"></div>
 
-    <br>
-    <button id="checkBtn">Antwort prüfen</button>
     <button id="nextBtn" disabled>Nächster Song</button>
 
     <div id="status"></div>
@@ -61,21 +75,12 @@
 
   <script>
     const songs = [
-      {
-        title: "Billie Jean",
-        artist: "Michael Jackson",
-        trackId: "5ChkMS8OtdzJeqyybCc9R5"
-      },
-      {
-        title: "Smells Like Teen Spirit",
-        artist: "Nirvana",
-        trackId: "5ghIJDpPoe3CfHMGu71E6T"
-      },
-      {
-        title: "Shape of You",
-        artist: "Ed Sheeran",
-        trackId: "7qiZfU4dY1lWllzX7mPBI3"
-      }
+      { title: "Billie Jean", artist: "Michael Jackson", trackId: "5ChkMS8OtdzJeqyybCc9R5" },
+      { title: "Smells Like Teen Spirit", artist: "Nirvana", trackId: "5ghIJDpPoe3CfHMGu71E6T" },
+      { title: "Shape of You", artist: "Ed Sheeran", trackId: "7qiZfU4dY1lWllzX7mPBI3" },
+      { title: "Poker Face", artist: "Lady Gaga", trackId: "1a1t2cJtQ2Y" },
+      { title: "Rolling in the Deep", artist: "Adele", trackId: "6I9VzXrHxO9rA9A5euc8Ak" },
+      { title: "Wonderwall", artist: "Oasis", trackId: "2Gf2i2qZtq" }
     ];
 
     let currentIndex = 0;
@@ -83,75 +88,78 @@
     let total = 0;
     let answered = false;
 
+    function updatePlayLink() {
+      const s = songs[currentIndex];
+      document.getElementById("playLink").href =
+        `https://open.spotify.com/track/${s.trackId}`;
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
     function loadSong() {
       answered = false;
-      document.getElementById("titleInput").value = "";
-      document.getElementById("artistInput").value = "";
       document.getElementById("status").textContent = "";
-      document.getElementById("checkBtn").disabled = false;
       document.getElementById("nextBtn").disabled = true;
+
+      updatePlayLink();
+
+      const s = songs[currentIndex];
+      const answersDiv = document.getElementById("answers");
+      answersDiv.innerHTML = "";
+
+      // 1 richtige Antwort
+      const correct = `${s.title} – ${s.artist}`;
+
+      // 5 falsche Antworten
+      let wrong = songs
+        .filter((_, i) => i !== currentIndex)
+        .map(x => `${x.title} – ${x.artist}`);
+
+      wrong = shuffle(wrong).slice(0, 5);
+
+      // mischen
+      const options = shuffle([correct, ...wrong]);
+
+      // Buttons erzeugen
+      options.forEach(option => {
+        const btn = document.createElement("button");
+        btn.className = "answer-btn";
+        btn.textContent = option;
+
+        btn.onclick = () => checkAnswer(option, correct);
+
+        answersDiv.appendChild(btn);
+      });
+
       updateScore();
     }
 
-    document.getElementById("playBtn").addEventListener("click", () => {
-      const s = songs[currentIndex];
-
-      // Primärer Link: Öffnet direkt die Spotify-App
-      const appLink = `spotify:track:${s.trackId}`;
-
-      // Fallback: Öffnet Spotify über den Browser
-      const webLink = `https://open.spotify.com/track/${s.trackId}`;
-
-      // Versuche zuerst die App zu öffnen
-      window.location.href = appLink;
-
-      // Falls blockiert → Browser-Link öffnen
-      setTimeout(() => {
-        window.open(webLink, "_blank");
-      }, 300);
-    });
-
-    function normalize(str) {
-      return str.trim().toLowerCase();
-    }
-
-    document.getElementById("checkBtn").addEventListener("click", () => {
+    function checkAnswer(selected, correct) {
       if (answered) return;
-
-      const s = songs[currentIndex];
-      const userTitle = normalize(document.getElementById("titleInput").value);
-      const userArtist = normalize(document.getElementById("artistInput").value);
-
-      const correctTitle = normalize(s.title);
-      const correctArtist = normalize(s.artist);
-
-      let correctParts = 0;
-      if (userTitle && correctTitle.includes(userTitle)) correctParts++;
-      if (userArtist && correctArtist.includes(userArtist)) correctParts++;
+      answered = true;
 
       total++;
 
       const status = document.getElementById("status");
 
-      if (correctParts === 2) {
+      if (selected === correct) {
         score++;
-        status.textContent = "Volltreffer! 🎉";
+        status.textContent = "Richtig! 🎉";
         status.style.color = "#10b981";
-      } else if (correctParts === 1) {
-        score += 0.5;
-        status.textContent = `Teilweise richtig! Gesucht war: ${s.title} – ${s.artist}`;
-        status.style.color = "#f59e0b";
       } else {
-        status.textContent = `Leider falsch. Gesucht war: ${s.title} – ${s.artist}`;
+        status.textContent = `Falsch! Gesucht war: ${correct}`;
         status.style.color = "#ef4444";
       }
 
-      answered = true;
-      document.getElementById("checkBtn").disabled = true;
       document.getElementById("nextBtn").disabled = false;
-
       updateScore();
-    });
+    }
 
     document.getElementById("nextBtn").addEventListener("click", () => {
       currentIndex = (currentIndex + 1) % songs.length;
