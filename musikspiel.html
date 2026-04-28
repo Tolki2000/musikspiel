@@ -2,180 +2,243 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Musik-Ratespiel (Spotify + Multiple Choice)</title>
+  <title>Musik-Quiz Mix</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #111;
-      color: #eee;
+      background: #0f172a;
+      color: #e5e7eb;
       text-align: center;
       padding: 20px;
     }
     .game-box {
-      background: #222;
+      background: #111827;
       padding: 20px;
-      border-radius: 10px;
-      max-width: 500px;
+      border-radius: 12px;
+      max-width: 600px;
       margin: auto;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    #questionType {
+      font-size: 0.9em;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+    #questionText {
+      font-size: 1.2em;
+      margin: 10px 0 18px;
+    }
+    .emoji {
+      font-size: 2.2em;
+      margin-bottom: 10px;
     }
     .answer-btn {
-      width: 90%;
+      width: 95%;
       padding: 10px;
       margin: 6px 0;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
-      font-weight: bold;
-      background: #333;
-      color: #eee;
+      font-weight: 600;
+      background: #1f2937;
+      color: #e5e7eb;
+      transition: background 0.15s, transform 0.05s;
     }
     .answer-btn:hover {
-      background: #444;
+      background: #374151;
+      transform: translateY(-1px);
     }
-    #playLink {
-      display: inline-block;
-      padding: 10px 20px;
-      margin: 10px 5px;
-      border-radius: 5px;
-      background: #1DB954;
-      color: #fff;
-      text-decoration: none;
-      font-weight: bold;
+    .answer-btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+      transform: none;
     }
-    #nextBtn {
+    #nextBtn, #startBtn, #endBtn {
       padding: 10px 20px;
-      margin: 10px 5px;
+      margin: 14px 5px 0;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
       font-weight: bold;
       background: #3b82f6;
       color: #fff;
     }
-    #status { margin-top: 10px; font-size: 1.1em; }
+    #nextBtn:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    #endBtn {
+      background: #dc2626;
+    }
+    #status {
+      margin-top: 12px;
+      font-size: 1.05em;
+      min-height: 1.2em;
+    }
+    #score {
+      margin-top: 6px;
+      font-size: 0.95em;
+      color: #9ca3af;
+    }
+    .category-box {
+      text-align: left;
+      margin: 10px auto;
+      max-width: 300px;
+    }
+    .category-box label {
+      display: block;
+      margin: 6px 0;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
+	<div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+  <img src="logo.png" alt="Musik-Quiz Logo" style="width:120px;height:auto;">
+  <h1>🎵 Musik-Quiz Mix</h1>
+</div>
 
-  <h1>🎵 Musik-Ratespiel</h1>
-  <p>Tippe auf „Song abspielen“, um den Titel in Spotify zu hören.</p>
+  <p>Emoji-Rätsel, Hinweise, Interpreten-Fragen und Wortwolken – alles in einem Spiel.</p>
 
-  <div class="game-box">
+  <!-- STARTSCREEN -->
+  <div class="game-box" id="categoryScreen">
+    <h2>Kategorien auswählen</h2>
 
-    <!-- WICHTIG: echter App-Link -->
-    <a id="playLink" href="#">Song abspielen</a>
+    <div class="category-box">
+      <label><input type="checkbox" value="Emoji-Rätsel" checked> Emoji-Rätsel</label>
+      <label><input type="checkbox" value="Hinweis-Quiz" checked> Hinweis-Quiz</label>
+      <label><input type="checkbox" value="Interpreten-Quiz" checked> Interpreten-Quiz</label>
+      <label><input type="checkbox" value="Wortwolke" checked> Wortwolke</label>
+    </div>
 
-    <h3>Welche Antwort ist richtig?</h3>
+    <button id="startBtn">Spiel starten</button>
+  </div>
+
+  <!-- QUIZSCREEN -->
+  <div class="game-box" id="quizScreen" style="display:none;">
+    <div id="questionType"></div>
+    <div id="questionText"></div>
+
     <div id="answers"></div>
 
-    <button id="nextBtn" disabled>Nächster Song</button>
+    <button id="nextBtn" disabled>Nächste Frage</button>
+    <button id="endBtn">Beenden</button>
 
     <div id="status"></div>
     <div id="score"></div>
   </div>
 
+  <!-- Fragen laden -->
+  <script src="questions.js"></script>
+
   <script>
-    const songs = [
-      { title: "Billie Jean", artist: "Michael Jackson", trackId: "5ChkMS8OtdzJeqyybCc9R5" },
-      { title: "Smells Like Teen Spirit", artist: "Nirvana", trackId: "5ghIJDpPoe3CfHMGu71E6T" },
-      { title: "Shape of You", artist: "Ed Sheeran", trackId: "7qiZfU4dY1lWllzX7mPBI3" },
-      { title: "Poker Face", artist: "Lady Gaga", trackId: "1a1t2cJtQ2Y" },
-      { title: "Rolling in the Deep", artist: "Adele", trackId: "6I9VzXrHxO9rA9A5euc8Ak" },
-      { title: "Wonderwall", artist: "Oasis", trackId: "2Gf2i2qZtq" }
-    ];
-
-    let currentIndex = 0;
+    let selectedCategories = [];
+    let questionPool = [];
+    let currentQuestion = null;
     let score = 0;
-    let total = 0;
-    let answered = false;
+    let questionIndex = 0;
 
-    function updatePlayLink() {
-      const s = songs[currentIndex];
+    const startBtn = document.getElementById("startBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const endBtn = document.getElementById("endBtn");
 
-      // DIREKT den App-Link setzen
-      const appLink = `spotify:track:${s.trackId}`;
+    const categoryScreen = document.getElementById("categoryScreen");
+    const quizScreen = document.getElementById("quizScreen");
 
-      const playLink = document.getElementById("playLink");
-      playLink.href = appLink;
+    const questionType = document.getElementById("questionType");
+    const questionText = document.getElementById("questionText");
+    const answersDiv = document.getElementById("answers");
+    const statusDiv = document.getElementById("status");
+    const scoreDiv = document.getElementById("score");
 
-      // KEIN preventDefault, KEIN window.location, KEIN Fallback
-      // → sonst blockiert Windows Chrome den Start
+    function shuffle(arr) {
+      return arr.sort(() => Math.random() - 0.5);
     }
 
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+    startBtn.onclick = () => {
+      const checkboxes = document.querySelectorAll(".category-box input");
+      selectedCategories = [...checkboxes].filter(c => c.checked).map(c => c.value);
+
+      questionPool = [];
+
+      if (selectedCategories.includes("Emoji-Rätsel")) questionPool.push(...emojiQuestions);
+      if (selectedCategories.includes("Hinweis-Quiz")) questionPool.push(...hintQuestions);
+      if (selectedCategories.includes("Interpreten-Quiz")) questionPool.push(...artistQuestions);
+      if (selectedCategories.includes("Wortwolke")) questionPool.push(...wordcloudQuestions);
+
+      questionPool = shuffle(questionPool);
+
+      score = 0;
+      questionIndex = 0;
+
+      categoryScreen.style.display = "none";
+      quizScreen.style.display = "block";
+
+      loadQuestion();
+    };
+
+    function loadQuestion() {
+      currentQuestion = questionPool[questionIndex];
+
+      questionType.textContent = currentQuestion.type;
+
+      if (currentQuestion.display) {
+        questionText.innerHTML = `<div class="emoji">${currentQuestion.display}</div>`;
+      } else if (currentQuestion.hints) {
+        questionText.innerHTML = currentQuestion.hints.map(h => "• " + h).join("<br>");
+      } else if (currentQuestion.description) {
+        questionText.textContent = currentQuestion.description;
+      } else if (currentQuestion.words) {
+        questionText.innerHTML = currentQuestion.words.join(" • ");
       }
-      return array;
-    }
 
-    function loadSong() {
-      answered = false;
-      document.getElementById("status").textContent = "";
-      document.getElementById("nextBtn").disabled = true;
-
-      updatePlayLink();
-
-      const s = songs[currentIndex];
-      const answersDiv = document.getElementById("answers");
       answersDiv.innerHTML = "";
+      statusDiv.textContent = "";
+      nextBtn.disabled = true;
 
-      const correct = `${s.title} – ${s.artist}`;
+      const shuffled = shuffle([...currentQuestion.options]);
 
-      let wrong = songs
-        .filter((_, i) => i !== currentIndex)
-        .map(x => `${x.title} – ${x.artist}`);
-
-      wrong = shuffle(wrong).slice(0, 5);
-
-      const options = shuffle([correct, ...wrong]);
-
-      options.forEach(option => {
+      shuffled.forEach(opt => {
         const btn = document.createElement("button");
         btn.className = "answer-btn";
-        btn.textContent = option;
-        btn.onclick = () => checkAnswer(option, correct);
+        btn.textContent = opt;
+
+        btn.onclick = () => {
+          if (opt === currentQuestion.correct) {
+            score++;
+            statusDiv.textContent = "✔️ Richtig!";
+            statusDiv.style.color = "#22c55e";
+          } else {
+            statusDiv.textContent = "❌ Falsch!";
+            statusDiv.style.color = "#ef4444";
+          }
+
+          document.querySelectorAll(".answer-btn").forEach(b => b.disabled = true);
+          nextBtn.disabled = false;
+
+          scoreDiv.textContent = `Punkte: ${score} / ${questionPool.length}`;
+        };
+
         answersDiv.appendChild(btn);
       });
-
-      updateScore();
     }
 
-    function checkAnswer(selected, correct) {
-      if (answered) return;
-      answered = true;
-
-      total++;
-
-      const status = document.getElementById("status");
-
-      if (selected === correct) {
-        score++;
-        status.textContent = "Richtig! 🎉";
-        status.style.color = "#10b981";
-      } else {
-        status.textContent = `Falsch! Gesucht war: ${correct}`;
-        status.style.color = "#ef4444";
+    nextBtn.onclick = () => {
+      questionIndex++;
+      if (questionIndex >= questionPool.length) {
+        statusDiv.textContent = "🎉 Quiz beendet!";
+        nextBtn.disabled = true;
+        return;
       }
+      loadQuestion();
+    };
 
-      document.getElementById("nextBtn").disabled = false;
-      updateScore();
-    }
-
-    document.getElementById("nextBtn").addEventListener("click", () => {
-      currentIndex = (currentIndex + 1) % songs.length;
-      loadSong();
-    });
-
-    function updateScore() {
-      document.getElementById("score").textContent =
-        `Punkte: ${score} / ${total}`;
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      loadSong();
-    });
+    endBtn.onclick = () => {
+      location.reload();
+    };
   </script>
 
 </body>
