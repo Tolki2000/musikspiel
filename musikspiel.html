@@ -25,18 +25,15 @@
       border-radius: 5px;
       border: none;
     }
-    button, a.button-link {
-      display: inline-block;
+    button {
       padding: 10px 20px;
       margin: 10px 5px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       font-weight: bold;
-      text-decoration: none;
-      color: #fff;
     }
-    #playLink { background: #1DB954; } /* Spotify-Grün */
+    #playBtn { background: #1DB954; } /* Spotify-Grün */
     #checkBtn { background: #10b981; }
     #nextBtn { background: #3b82f6; }
     #status { margin-top: 10px; font-size: 1.1em; }
@@ -49,10 +46,7 @@
 
   <div class="game-box">
 
-    <!-- WICHTIG: echter Link, kein Button -->
-    <a id="playLink" class="button-link" href="#" target="_blank" rel="noopener noreferrer">
-      Song abspielen
-    </a>
+    <button id="playBtn">Song abspielen</button>
 
     <input id="titleInput" type="text" placeholder="Songtitel">
     <input id="artistInput" type="text" placeholder="Interpret">
@@ -89,13 +83,6 @@
     let total = 0;
     let answered = false;
 
-    function updatePlayLink() {
-      const s = songs[currentIndex];
-      const webLink = `https://open.spotify.com/track/${s.trackId}`;
-      const playLink = document.getElementById("playLink");
-      playLink.href = webLink;
-    }
-
     function loadSong() {
       answered = false;
       document.getElementById("titleInput").value = "";
@@ -104,8 +91,25 @@
       document.getElementById("checkBtn").disabled = false;
       document.getElementById("nextBtn").disabled = true;
       updateScore();
-      updatePlayLink();
     }
+
+    document.getElementById("playBtn").addEventListener("click", () => {
+      const s = songs[currentIndex];
+
+      // Primärer Link: Öffnet direkt die Spotify-App
+      const appLink = `spotify:track:${s.trackId}`;
+
+      // Fallback: Öffnet Spotify über den Browser
+      const webLink = `https://open.spotify.com/track/${s.trackId}`;
+
+      // Versuche zuerst die App zu öffnen
+      window.location.href = appLink;
+
+      // Falls blockiert → Browser-Link öffnen
+      setTimeout(() => {
+        window.open(webLink, "_blank");
+      }, 300);
+    });
 
     function normalize(str) {
       return str.trim().toLowerCase();
