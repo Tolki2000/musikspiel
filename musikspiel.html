@@ -4,136 +4,168 @@
   <meta charset="UTF-8">
   <title>Musik-Quiz Mix</title>
   <style>
-    body {
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
       font-family: Arial, sans-serif;
-      background: #0f172a;
+      background: linear-gradient(180deg, #0f172a, #1e293b);
       color: #e5e7eb;
-      text-align: center;
-      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
     }
+
     .game-box {
-      background: #111827;
-      padding: 20px;
-      border-radius: 12px;
-      max-width: 600px;
-      margin: auto;
+      background: rgba(17, 24, 39, 0.9);
+      padding: 3vw;
+      border-radius: 1.2em;
+      width: 90%;
+      max-width: 700px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      margin-top: 2vh;
+      box-sizing: border-box;
     }
+
     h1 {
-      margin-bottom: 10px;
+      margin: 1vh 0;
+      font-size: 3vw;
+      min-font-size: 24px;
     }
+
     #questionType {
-      font-size: 0.9em;
-      color: #9ca3af;
-      margin-bottom: 8px;
-    }
-    #questionText {
       font-size: 1.2em;
-      margin: 10px 0 18px;
+      color: #9ca3af;
+      margin-bottom: 1vh;
     }
+
+    #questionText {
+      font-size: 1.4em;
+      margin: 2vh 0;
+      line-height: 1.4em;
+    }
+
     .emoji {
-      font-size: 2.2em;
-      margin-bottom: 10px;
+      font-size: 3em;
+      margin-bottom: 1vh;
     }
+
     .answer-btn {
-      width: 95%;
-      padding: 10px;
-      margin: 6px 0;
+      width: 100%;
+      padding: 2vh;
+      margin: 1vh 0;
       border: none;
-      border-radius: 6px;
+      border-radius: 10px;
       cursor: pointer;
       font-weight: 600;
+      font-size: 1.1em;
       background: #1f2937;
       color: #e5e7eb;
-      transition: background 0.15s, transform 0.05s;
+      transition: background 0.2s, transform 0.1s;
     }
+
     .answer-btn:hover {
       background: #374151;
-      transform: translateY(-1px);
+      transform: scale(1.03);
     }
+
     .answer-btn:disabled {
       opacity: 0.6;
       cursor: default;
       transform: none;
     }
+
     #nextBtn, #startBtn, #endBtn {
-      padding: 10px 20px;
-      margin: 14px 5px 0;
+      padding: 2vh 4vw;
+      margin: 2vh 1vw 0;
       border: none;
-      border-radius: 6px;
+      border-radius: 10px;
       cursor: pointer;
       font-weight: bold;
+      font-size: 1.2em;
       background: #3b82f6;
       color: #fff;
+      transition: background 0.2s, transform 0.1s;
     }
-    #nextBtn:disabled {
-      opacity: 0.5;
-      cursor: default;
+
+    #nextBtn:hover, #startBtn:hover, #endBtn:hover {
+      transform: scale(1.05);
     }
+
     #endBtn {
       background: #dc2626;
     }
+
     #status {
-      margin-top: 12px;
-      font-size: 1.05em;
-      min-height: 1.2em;
+      margin-top: 1vh;
+      font-size: 1.2em;
+      min-height: 1.4em;
     }
+
     #score {
-      margin-top: 6px;
-      font-size: 0.95em;
+      margin-top: 1vh;
+      font-size: 1em;
       color: #9ca3af;
     }
+
     .category-box {
       text-align: left;
-      margin: 10px auto;
+      margin: 2vh auto;
       max-width: 300px;
+      font-size: 1.1em;
     }
+
     .category-box label {
       display: block;
-      margin: 6px 0;
+      margin: 1vh 0;
       cursor: pointer;
+    }
+
+    img.logo {
+      width: 20vw;
+      max-width: 150px;
+      height: auto;
+      margin-bottom: 1vh;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 6vw; }
+      .answer-btn { font-size: 1em; padding: 2.5vh; }
+      #nextBtn, #startBtn, #endBtn { font-size: 1em; padding: 2.5vh 5vw; }
+      img.logo { width: 35vw; }
     }
   </style>
 </head>
 <body>
-	<div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
-  <img src="logo.png" alt="Musik-Quiz Logo" style="width:120px;height:auto;">
-  <h1>🎵 Musik-Quiz Mix</h1>
-</div>
 
-  <p>Emoji-Rätsel, Hinweise, Interpreten-Fragen und Wortwolken – alles in einem Spiel.</p>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+    <img src="logo.png" alt="Musik-Quiz Logo" class="logo">
+    <h1>🎵 Musik-Quiz Mix</h1>
+  </div>
 
-  <!-- STARTSCREEN -->
   <div class="game-box" id="categoryScreen">
     <h2>Kategorien auswählen</h2>
-
     <div class="category-box">
       <label><input type="checkbox" value="Emoji-Rätsel" checked> Emoji-Rätsel</label>
       <label><input type="checkbox" value="Hinweis-Quiz" checked> Hinweis-Quiz</label>
       <label><input type="checkbox" value="Interpreten-Quiz" checked> Interpreten-Quiz</label>
       <label><input type="checkbox" value="Wortwolke" checked> Wortwolke</label>
     </div>
-
     <button id="startBtn">Spiel starten</button>
   </div>
 
-  <!-- QUIZSCREEN -->
   <div class="game-box" id="quizScreen" style="display:none;">
     <div id="questionType"></div>
     <div id="questionText"></div>
-
     <div id="answers"></div>
-
     <button id="nextBtn" disabled>Nächste Frage</button>
     <button id="endBtn">Beenden</button>
-
     <div id="status"></div>
     <div id="score"></div>
   </div>
 
-  <!-- Fragen laden -->
   <script src="questions.js"></script>
-
   <script>
     let selectedCategories = [];
     let questionPool = [];
@@ -144,84 +176,53 @@
     const startBtn = document.getElementById("startBtn");
     const nextBtn = document.getElementById("nextBtn");
     const endBtn = document.getElementById("endBtn");
-
     const categoryScreen = document.getElementById("categoryScreen");
     const quizScreen = document.getElementById("quizScreen");
-
     const questionType = document.getElementById("questionType");
     const questionText = document.getElementById("questionText");
     const answersDiv = document.getElementById("answers");
     const statusDiv = document.getElementById("status");
     const scoreDiv = document.getElementById("score");
 
-    function shuffle(arr) {
-      return arr.sort(() => Math.random() - 0.5);
-    }
+    function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
 
     startBtn.onclick = () => {
       const checkboxes = document.querySelectorAll(".category-box input");
       selectedCategories = [...checkboxes].filter(c => c.checked).map(c => c.value);
-
       questionPool = [];
-
       if (selectedCategories.includes("Emoji-Rätsel")) questionPool.push(...emojiQuestions);
       if (selectedCategories.includes("Hinweis-Quiz")) questionPool.push(...hintQuestions);
       if (selectedCategories.includes("Interpreten-Quiz")) questionPool.push(...artistQuestions);
       if (selectedCategories.includes("Wortwolke")) questionPool.push(...wordcloudQuestions);
-
       questionPool = shuffle(questionPool);
-
-      score = 0;
-      questionIndex = 0;
-
+      score = 0; questionIndex = 0;
       categoryScreen.style.display = "none";
       quizScreen.style.display = "block";
-
       loadQuestion();
     };
 
     function loadQuestion() {
       currentQuestion = questionPool[questionIndex];
-
       questionType.textContent = currentQuestion.type;
-
-      if (currentQuestion.display) {
-        questionText.innerHTML = `<div class="emoji">${currentQuestion.display}</div>`;
-      } else if (currentQuestion.hints) {
-        questionText.innerHTML = currentQuestion.hints.map(h => "• " + h).join("<br>");
-      } else if (currentQuestion.description) {
-        questionText.textContent = currentQuestion.description;
-      } else if (currentQuestion.words) {
-        questionText.innerHTML = currentQuestion.words.join(" • ");
-      }
-
-      answersDiv.innerHTML = "";
-      statusDiv.textContent = "";
-      nextBtn.disabled = true;
-
+      if (currentQuestion.display) questionText.innerHTML = `<div class="emoji">${currentQuestion.display}</div>`;
+      else if (currentQuestion.hints) questionText.innerHTML = currentQuestion.hints.map(h => "• " + h).join("<br>");
+      else if (currentQuestion.description) questionText.textContent = currentQuestion.description;
+      else if (currentQuestion.words) questionText.innerHTML = currentQuestion.words.join(" • ");
+      answersDiv.innerHTML = ""; statusDiv.textContent = ""; nextBtn.disabled = true;
       const shuffled = shuffle([...currentQuestion.options]);
-
       shuffled.forEach(opt => {
         const btn = document.createElement("button");
-        btn.className = "answer-btn";
-        btn.textContent = opt;
-
+        btn.className = "answer-btn"; btn.textContent = opt;
         btn.onclick = () => {
           if (opt === currentQuestion.correct) {
-            score++;
-            statusDiv.textContent = "✔️ Richtig!";
-            statusDiv.style.color = "#22c55e";
+            score++; statusDiv.textContent = "✔️ Richtig!"; statusDiv.style.color = "#22c55e";
           } else {
-            statusDiv.textContent = "❌ Falsch!";
-            statusDiv.style.color = "#ef4444";
+            statusDiv.textContent = "❌ Falsch!"; statusDiv.style.color = "#ef4444";
           }
-
           document.querySelectorAll(".answer-btn").forEach(b => b.disabled = true);
           nextBtn.disabled = false;
-
           scoreDiv.textContent = `Punkte: ${score} / ${questionPool.length}`;
         };
-
         answersDiv.appendChild(btn);
       });
     }
@@ -234,12 +235,3 @@
         return;
       }
       loadQuestion();
-    };
-
-    endBtn.onclick = () => {
-      location.reload();
-    };
-  </script>
-
-</body>
-</html>
