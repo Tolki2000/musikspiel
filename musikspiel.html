@@ -14,7 +14,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
     }
 
     .game-box {
@@ -166,6 +165,7 @@
   </div>
 
   <script src="questions.js"></script>
+
   <script>
     let selectedCategories = [];
     let questionPool = [];
@@ -184,45 +184,74 @@
     const statusDiv = document.getElementById("status");
     const scoreDiv = document.getElementById("score");
 
-    function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+    function shuffle(arr) {
+      return arr.sort(() => Math.random() - 0.5);
+    }
 
     startBtn.onclick = () => {
       const checkboxes = document.querySelectorAll(".category-box input");
       selectedCategories = [...checkboxes].filter(c => c.checked).map(c => c.value);
+
       questionPool = [];
+
       if (selectedCategories.includes("Emoji-Rätsel")) questionPool.push(...emojiQuestions);
       if (selectedCategories.includes("Hinweis-Quiz")) questionPool.push(...hintQuestions);
       if (selectedCategories.includes("Interpreten-Quiz")) questionPool.push(...artistQuestions);
       if (selectedCategories.includes("Wortwolke")) questionPool.push(...wordcloudQuestions);
+
       questionPool = shuffle(questionPool);
-      score = 0; questionIndex = 0;
+
+      score = 0;
+      questionIndex = 0;
+
       categoryScreen.style.display = "none";
       quizScreen.style.display = "block";
+
       loadQuestion();
     };
 
     function loadQuestion() {
       currentQuestion = questionPool[questionIndex];
+
       questionType.textContent = currentQuestion.type;
-      if (currentQuestion.display) questionText.innerHTML = `<div class="emoji">${currentQuestion.display}</div>`;
-      else if (currentQuestion.hints) questionText.innerHTML = currentQuestion.hints.map(h => "• " + h).join("<br>");
-      else if (currentQuestion.description) questionText.textContent = currentQuestion.description;
-      else if (currentQuestion.words) questionText.innerHTML = currentQuestion.words.join(" • ");
-      answersDiv.innerHTML = ""; statusDiv.textContent = ""; nextBtn.disabled = true;
+
+      if (currentQuestion.display) {
+        questionText.innerHTML = `<div class="emoji">${currentQuestion.display}</div>`;
+      } else if (currentQuestion.hints) {
+        questionText.innerHTML = currentQuestion.hints.map(h => "• " + h).join("<br>");
+      } else if (currentQuestion.description) {
+        questionText.textContent = currentQuestion.description;
+      } else if (currentQuestion.words) {
+        questionText.innerHTML = currentQuestion.words.join(" • ");
+      }
+
+      answersDiv.innerHTML = "";
+      statusDiv.textContent = "";
+      nextBtn.disabled = true;
+
       const shuffled = shuffle([...currentQuestion.options]);
+
       shuffled.forEach(opt => {
         const btn = document.createElement("button");
-        btn.className = "answer-btn"; btn.textContent = opt;
+        btn.className = "answer-btn";
+        btn.textContent = opt;
+
         btn.onclick = () => {
           if (opt === currentQuestion.correct) {
-            score++; statusDiv.textContent = "✔️ Richtig!"; statusDiv.style.color = "#22c55e";
+            score++;
+            statusDiv.textContent = "✔️ Richtig!";
+            statusDiv.style.color = "#22c55e";
           } else {
-            statusDiv.textContent = "❌ Falsch!"; statusDiv.style.color = "#ef4444";
+            statusDiv.textContent = "❌ Falsch!";
+            statusDiv.style.color = "#ef4444";
           }
+
           document.querySelectorAll(".answer-btn").forEach(b => b.disabled = true);
           nextBtn.disabled = false;
+
           scoreDiv.textContent = `Punkte: ${score} / ${questionPool.length}`;
         };
+
         answersDiv.appendChild(btn);
       });
     }
@@ -235,108 +264,12 @@
         return;
       }
       loadQuestion();
-<script src="questions.js"></script>
-<script>
-  let selectedCategories = [];
-  let questionPool = [];
-  let currentQuestion = null;
-  let score = 0;
-  let questionIndex = 0;
+    };
 
-  const startBtn = document.getElementById("startBtn");
-  const nextBtn = document.getElementById("nextBtn");
-  const endBtn = document.getElementById("endBtn");
-  const categoryScreen = document.getElementById("categoryScreen");
-  const quizScreen = document.getElementById("quizScreen");
-  const questionType = document.getElementById("questionType");
-  const questionText = document.getElementById("questionText");
-  const answersDiv = document.getElementById("answers");
-  const statusDiv = document.getElementById("status");
-  const scoreDiv = document.getElementById("score");
+    endBtn.onclick = () => {
+      location.reload();
+    };
+  </script>
 
-  function shuffle(arr) {
-    return arr.sort(() => Math.random() - 0.5);
-  }
-
-  startBtn.onclick = () => {
-    const checkboxes = document.querySelectorAll(".category-box input");
-    selectedCategories = [...checkboxes].filter(c => c.checked).map(c => c.value);
-
-    questionPool = [];
-
-    if (selectedCategories.includes("Emoji-Rätsel")) questionPool.push(...emojiQuestions);
-    if (selectedCategories.includes("Hinweis-Quiz")) questionPool.push(...hintQuestions);
-    if (selectedCategories.includes("Interpreten-Quiz")) questionPool.push(...artistQuestions);
-    if (selectedCategories.includes("Wortwolke")) questionPool.push(...wordcloudQuestions);
-
-    questionPool = shuffle(questionPool);
-
-    score = 0;
-    questionIndex = 0;
-
-    categoryScreen.style.display = "none";
-    quizScreen.style.display = "block";
-
-    loadQuestion();
-  };
-
-  function loadQuestion() {
-    currentQuestion = questionPool[questionIndex];
-
-    questionType.textContent = currentQuestion.type;
-
-    if (currentQuestion.display) {
-      questionText.innerHTML = `<div class="emoji">${currentQuestion.display}</div>`;
-    } else if (currentQuestion.hints) {
-      questionText.innerHTML = currentQuestion.hints.map(h => "• " + h).join("<br>");
-    } else if (currentQuestion.description) {
-      questionText.textContent = currentQuestion.description;
-    } else if (currentQuestion.words) {
-      questionText.innerHTML = currentQuestion.words.join(" • ");
-    }
-
-    answersDiv.innerHTML = "";
-    statusDiv.textContent = "";
-    nextBtn.disabled = true;
-
-    const shuffled = shuffle([...currentQuestion.options]);
-
-    shuffled.forEach(opt => {
-      const btn = document.createElement("button");
-      btn.className = "answer-btn";
-      btn.textContent = opt;
-
-      btn.onclick = () => {
-        if (opt === currentQuestion.correct) {
-          score++;
-          statusDiv.textContent = "✔️ Richtig!";
-          statusDiv.style.color = "#22c55e";
-        } else {
-          statusDiv.textContent = "❌ Falsch!";
-          statusDiv.style.color = "#ef4444";
-        }
-
-        document.querySelectorAll(".answer-btn").forEach(b => b.disabled = true);
-        nextBtn.disabled = false;
-
-        scoreDiv.textContent = `Punkte: ${score} / ${questionPool.length}`;
-      };
-
-      answersDiv.appendChild(btn);
-    });
-  }
-
-  nextBtn.onclick = () => {
-    questionIndex++;
-    if (questionIndex >= questionPool.length) {
-      statusDiv.textContent = "🎉 Quiz beendet!";
-      nextBtn.disabled = true;
-      return;
-    }
-    loadQuestion();
-  };
-
-  endBtn.onclick = () => {
-    location.reload();
-  };
-</script>
+</body>
+</html>
