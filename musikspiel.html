@@ -134,14 +134,46 @@
       #nextBtn, #startBtn, #endBtn { font-size: 1em; padding: 2.5vh 5vw; }
       img.logo { width: 35vw; }
     }
+	
+	.header {
+	  width: 100%;
+	  max-width: 700px;
+	  display: flex;
+	  align-items: center;
+	  justify-content: space-between;
+	  margin-top: 2vh;
+	  margin-bottom: 1vh; /* Abstand halbiert */
+	}
+
+	.logo {
+	  width: 80px;
+	  height: auto;
+	}
+
+	.left-logo {
+	  margin-right: 10px;
+	}
+
+	.right-logo {
+	  margin-left: 10px;
+	}
+
+	h1 {
+	  flex-grow: 1;
+	  text-align: center;
+	  margin: 0;
+	  font-size: 2.2em;
+	}
+
   </style>
 </head>
 <body>
 
-  <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
-    <img src="logo.png" alt="Musik-Quiz Logo" class="logo">
-    <h1>🎵 Musik-Quiz Mix</h1>
-  </div>
+  <div class="header">
+  <img src="logo.png" class="logo left-logo" alt="Logo links">
+  <h1>🎵 Musik-Quiz Mix</h1>
+  <img src="logo.png" class="logo right-logo" alt="Logo rechts">
+</div>
 
   <div class="game-box" id="categoryScreen">
     <h2>Kategorien auswählen</h2>
